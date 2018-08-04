@@ -5,7 +5,6 @@
     "node": "6.5.0",
     "npm": "4.3.0"
   },
-  "description": "",
   "main": "index.js",
   "dependencies": {
     "aliexpress": "^0.2.2",
@@ -33,5 +32,14 @@
     "start": "node server.js"
   },
   "author": "cricketeam",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glshahar/thesis-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/glshahar/thesis-server/issues"
+  },
+  "homepage": "https://github.com/glshahar/thesis-server#readme",
+  "description": ""
 }
