@@ -1,0 +1,37 @@
+{
+  "name": "cricketservice",
+  "version": "1.0.0",
+  "engines": {
+    "node": "6.5.0",
+    "npm": "4.3.0"
+  },
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "aliexpress": "^0.2.2",
+    "angular": "^1.6.4",
+    "angular-local-storage": "^0.5.2",
+    "body-parser": "^1.17.1",
+    "crawler": "^1.0.5",
+    "dateformat": "^2.0.0",
+    "exchange-rates": "^0.1.2",
+    "express": "4.15.3",
+    "gearbestgrabber": "^1.0.1",
+    "get-image-colors": "^1.8.1",
+    "http": "0.0.0",
+    "jszip": "^3.1.5",
+    "money": "^0.2.0",
+    "mongoose": "^4.9.3",
+    "node-scrapy": "^0.3.1",
+    "nodemailer": "^3.1.8",
+    "redis": "^2.1.0",
+    "socket.io": "2.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "cricketeam",
+  "license": "ISC"
+}
