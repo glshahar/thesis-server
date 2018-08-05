@@ -22,9 +22,22 @@ app.use(function(req, res, next){
 
 app.post('/getAllPosts', db.getAllPosts);
 app.post('/getPostByKeyword', db.getPostByKeyword);
-app.get('/getPostsData', db.getPostsData);
+
+// Get All Walla Post
+app.get('/getPostsWalla', db.getPostsWalla);
+
+// Get All Maariv Post
+app.get('/getPostsMaariv', db.getPostsMaariv);
+
+// Get All Maariv Post
+app.get('/getPostsHaaretz', db.getPostsHaaretz);
+
+// Get All Ynet Post
 app.get('/getPostsYnet', db.getPostsYnet);
-app.get('/getPosts10', db.getPosts10);
+
+// Get All Inn Post
+app.get('/getPostsInn', db.getPostsInn);
+
 
 
 app.listen(port);

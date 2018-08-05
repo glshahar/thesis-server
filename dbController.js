@@ -9,8 +9,8 @@ var fs = require('fs');
 var Post = require('./defineSchema/Post');
 
 
-// Daily Get Colleges Data from external Url
-exports.getPostsData = function(req, res){
+// Get All Walla Post
+exports.getPostsWalla = function(req, res){
 	console.log("Start Get All Walla Post...");
 
 	let postsArr = [];
@@ -94,31 +94,196 @@ exports.getPostsData = function(req, res){
 			})
 		}
 
-		// for (var i = 0; i < postsArr.length; i++) {
-		// 	Department.update(
-		// 	{ "_id": postsArr[i]._id },
-		// 	{ "$set": { 
-		// 		name:  postsArr[i].name, 
-		// 		title: postsArr[i].title,
-		// 		subtitle: postsArr[i].subtitle, 
-		// 		text: postsArr[i].text,
-		// 		url: postsArr[i].url,
-		// 	}}).
-		// 	exec (function(err, newPost){
-		// 		if(err){
-		// 			console.log(err);
-		// 		}
-		// 		if(newPost){
-		// 			console.log("Post Updated successfully");
-		// 		}
-		// 	})
-		// }
+	});
+};
 
+// Get All Maariv Post
+exports.getPostsMaariv = function(req, res){
+	console.log("Start Get All 10 Post...");
+
+	let postsArr = [];
+
+	async.waterfall([
+
+        function(callback) { // Get Details
+
+        	console.log("Start: A - 1");
+			console.log("get 10 posts START!");
+
+			var postDetails = {
+				title: 'h1',
+				date: 'p.article-he-date',
+				subtitle: 'h2',
+				text: '.article-text',
+			};
+
+			var currPost = 0;
+			var currentPost = 0;
+
+			for (var i = 585549; i<585750; i++) {
+
+				let newPost = new Post();
+				newPost.name = "maariv - news";
+				newPost._id = "m"+i;
+				let newUrl = "http://www.maariv.co.il/news/israel/Article-"+i;
+				newPost.url = newUrl;
+
+				scrapy.scrape(newUrl, postDetails, function(err, data) {
+				    if (err) {
+				    	// console.error(err);
+				    }
+				    else if((data.title)&&(data.text)) {
+				    	console.log(currPost+" => "+JSON.stringify(data, null, 2));
+					    newPost.title = data.title;
+					    if(Array.isArray(data.subtitle))
+					    	newPost.subtitle = data.subtitle[0];
+					    else newPost.subtitle = data.subtitle;
+					    if(Array.isArray(data.text)){
+					    	let tmpPost = "";
+					    	for (var i = 0; i < data.text.length; i++) {
+					    		tmpPost += " "+data.text[i]+" ";
+					    		if(i==data.text.length-1){
+					    			newPost.text = tmpPost;
+					    		}
+					    	}
+					    }
+					    else newPost.text = data.text;
+					    newPost.date = data.date;
+					    postsArr[currentPost] = newPost;
+					    currentPost++;
+					}
+					// console.log("test => "+JSON.stringify(data, null, 2));
+
+				    if(currPost==200) {
+				    	console.log("End: A - 1");
+				    	callback(null, "a11111");	
+				    }
+				    else currPost++;
+				});
+			}
+	    },
+
+    ],  
+    function (err) {
+    	console.log("Save Json START!");
+    	var json = JSON.stringify(postsArr, null, 2);
+    	// console.log(json);
+    	fs.writeFile('data/posts.json', json, 'utf8', function(){			
+			console.log("Save Json is finished!");
+		});
+
+
+		for (var i = 0; i < postsArr.length; i++) {
+			postsArr[i].save(function(err, newPost){
+				if(err){
+					console.log(err);
+				}
+				else {
+					console.log("Create Post successfully : "+newPost.title);
+					// console.log("Department => "+JSON.stringify(newDepartment, null, 4));
+				}
+			})
+		}
+	});
+};
+
+// Get All Ynet Post
+exports.getPostsHaaretz = function(req, res){
+	console.log("Start Get All Haaretz Post...");
+
+	let postsArr = [];
+
+	async.waterfall([
+
+        function(callback) { // Get Details
+
+        	console.log("Start: A - 1");
+			console.log("get Haaretz posts START!");
+
+			var postDetails = {
+				title: 'header > h1',
+				date: 'time',
+				subtitle: 'header > p',
+				text: 'p.t-body-text',
+			};
+
+			var currPost = 0;
+			var currentPost = 0;
+
+			for (var i = 6265255; i<6265656; i++) {
+
+				let newPost = new Post();
+				newPost.name = "haaretz - news";
+				newPost._id = "h"+i;
+				let newUrl = "https://www.haaretz.co.il/news/1."+i;
+				newPost.url = newUrl;
+
+				scrapy.scrape(newUrl, postDetails, function(err, data) {
+				    if (err) {
+				    	// console.error(err);
+				    }
+				    else if((data.title)&&(Array.isArray(data.text))) {
+				    	console.log(currPost+" => "+JSON.stringify(data, null, 2));
+					    newPost.title = data.title;
+					    if(Array.isArray(data.subtitle))
+					    	newPost.subtitle = data.subtitle[0];
+					    else newPost.subtitle = data.subtitle;
+					    if(Array.isArray(data.text)){
+					    	let tmpPost = "";
+					    	for (var i = 3; i < data.text.length; i++) {
+					    		tmpPost += " "+data.text[i]+" ";
+					    		if(i==data.text.length-1){
+					    			if(data.text[data.text.length-1][data.text[data.text.length-1].length-1]+data.text[data.text.length-1][data.text[data.text.length-1].length-2]=="..")
+					    				console.log("Failed !");
+					    			else newPost.text = tmpPost;
+					    		}
+					    	}
+					    }
+					    newPost.date = data.date[0];
+					    if((newPost.text)&&(newPost.subtitle)&&(newPost.text.split(" ").length>60)){
+					    	postsArr[currentPost] = newPost;
+					    	currentPost++;
+					    }
+					}
+					// console.log("test => "+JSON.stringify(data, null, 2));
+
+				    if(currPost==400) {
+				    	console.log("End: A - 1");
+				    	callback(null, "a11111");	
+				    }
+				    else currPost++;
+				});
+			}
+	    },
+
+    ],  
+    function (err) {
+    	console.log("Save Json START!");
+    	var json = JSON.stringify(postsArr, null, 2);
+    	// console.log(json);
+    	fs.writeFile('data/posts.json', json, 'utf8', function(){			
+			console.log("Save Json is finished!");
+		});
+
+
+		for (var i = 0; i < postsArr.length; i++) {
+			postsArr[i].save(function(err, newPost){
+				if(err){
+					console.log(err);
+				}
+				else {
+					console.log("Create Post successfully : "+newPost.title);
+					// console.log("Department => "+JSON.stringify(newDepartment, null, 4));
+				}
+			})
+		}
 
 	});
 };
 
-// Daily Get Colleges Data from external Url
+
+
+// Get All Ynet Post
 exports.getPostsYnet = function(req, res){
 	console.log("Start Get All Ynet Post...");
 
@@ -132,20 +297,16 @@ exports.getPostsYnet = function(req, res){
 			console.log("get Ynet posts START!");
 
 			var postDetails = {
-				title: 'h1',
-				date: 'span.art_header_footer_author',
-				subtitle: 'div.art_header_sub_title',
-				text: '.text14 span',
-				maintainers: 
-	              { selector: '.text14 > span > p',
-	                get: 'text',
-	                prefix: '' }
+				title: '.art_header_title',
+				date: '.art_header_footer_author',
+				subtitle: '.art_header_sub_title',
+				text: 'div.text14 > span > P',
 			};
 
 			var currPost = 0;
 			var currentPost = 0;
 
-			for (var i = 5321607; i<5321708; i++) {
+			for (var i = 5031040; i<5031141; i++) {
 
 				let newPost = new Post();
 				newPost.name = "ynet - news";
@@ -157,7 +318,7 @@ exports.getPostsYnet = function(req, res){
 				    if (err) {
 				    	// console.error(err);
 				    }
-				    else if((data.title)&&(Array.isArray(data.text))) {
+				    else if((data.title)&&(Array.isArray(data.text))&&((data.subtitle))) {
 				    	console.log(currPost+" => "+JSON.stringify(data, null, 2));
 					    newPost.title = data.title;
 					    if(Array.isArray(data.subtitle))
@@ -223,34 +384,12 @@ exports.getPostsYnet = function(req, res){
 		// 	})
 		// }
 
-		// for (var i = 0; i < postsArr.length; i++) {
-		// 	Department.update(
-		// 	{ "_id": postsArr[i]._id },
-		// 	{ "$set": { 
-		// 		name:  postsArr[i].name, 
-		// 		title: postsArr[i].title,
-		// 		subtitle: postsArr[i].subtitle, 
-		// 		text: postsArr[i].text,
-		// 		url: postsArr[i].url,
-		// 	}}).
-		// 	exec (function(err, newPost){
-		// 		if(err){
-		// 			console.log(err);
-		// 		}
-		// 		if(newPost){
-		// 			console.log("Post Updated successfully");
-		// 		}
-		// 	})
-		// }
-
-
 	});
 };
 
-
-// Daily Get Colleges Data from external Url
-exports.getPosts10 = function(req, res){
-	console.log("Start Get All 10 Post...");
+// Get All IsraelHayom Post
+exports.getPostsInn = function(req, res){
+	console.log("Start Get All Inn Post...");
 
 	let postsArr = [];
 
@@ -259,37 +398,35 @@ exports.getPosts10 = function(req, res){
         function(callback) { // Get Details
 
         	console.log("Start: A - 1");
-			console.log("get 10 posts START!");
+			console.log("get Inn posts START!");
 
 			var postDetails = {
 				title: 'h1',
-				date: 'p.article-he-date',
-				subtitle: 'h2',
-				text: '.article-text',
-				// maintainers: 
-	   //            { selector: '.text14 > span > p',
-	   //              get: 'text',
-	   //              prefix: '' }
+				date: 'span.Date > span',
+				subtitle: 'div.Desc > p',
+				text: 'div.Content > p',
 			};
 
 			var currPost = 0;
 			var currentPost = 0;
 
-			for (var i = 648549; i<648750; i++) {
+			for (var i = 379020; i<379121; i++) {
 
 				let newPost = new Post();
-				newPost.name = "maariv - news";
-				newPost._id = "m"+i;
-				let newUrl = "http://www.maariv.co.il/news/israel/Article-"+i;
+				newPost.name = "inn - news";
+				newPost._id = "i"+i;
+				let newUrl = "https://www.inn.co.il/News/News.aspx/"+i;
 				newPost.url = newUrl;
 
 				scrapy.scrape(newUrl, postDetails, function(err, data) {
 				    if (err) {
-				    	// console.error(err);
+				    	console.error(err);
 				    }
-				    else if((data.title)&&(data.text)) {
+				    else if((data.title)&&(Array.isArray(data.text))) {
 				    	console.log(currPost+" => "+JSON.stringify(data, null, 2));
-					    newPost.title = data.title;
+				    	if(Array.isArray(data.title))
+					    	newPost.title = data.title[0];
+					    else newPost.title = data.title;
 					    if(Array.isArray(data.subtitle))
 					    	newPost.subtitle = data.subtitle[0];
 					    else newPost.subtitle = data.subtitle;
@@ -302,13 +439,13 @@ exports.getPosts10 = function(req, res){
 					    		}
 					    	}
 					    }
-					    else newPost.text = data.text;
 					    newPost.date = data.date;
-					    postsArr[currentPost] = newPost;
-					    currentPost++;
+					    if((newPost.text.split(" ").length>60)&&(newPost.text[0]+newPost.text[1]+newPost.text[2]+newPost.text[3]+newPost.text[4]!=" טוען")){
+						    postsArr[currentPost] = newPost;
+						    currentPost++;
+						}
 					}
 					// console.log("test => "+JSON.stringify(data, null, 2));
-
 					// let originalStr = data.text.split(" ");
 					// let finalStr = "";
 					// for (var i = 0; i < originalStr.length; i++) {
@@ -317,14 +454,14 @@ exports.getPosts10 = function(req, res){
 					// 	if(position >= 0){
 					// 	    // alert('String contains Hebrew');
 					// 	    finalStr += tmpStr+" "
-     		  	    // 	}
+					// 	}
 					// 	if(i==originalStr.length-1){
 					// 		console.log("finalStr: "+finalStr);
 					// 		postsArr[currPost] = finalStr;
 					// 		currPost++;
 					// 	}
 					// }
-				    if(currPost==200) {
+				    if(currPost==100) {
 				    	console.log("End: A - 1");
 				    	callback(null, "a11111");	
 				    }
@@ -355,34 +492,28 @@ exports.getPosts10 = function(req, res){
 			})
 		}
 
-		// for (var i = 0; i < postsArr.length; i++) {
-		// 	Department.update(
-		// 	{ "_id": postsArr[i]._id },
-		// 	{ "$set": { 
-		// 		name:  postsArr[i].name, 
-		// 		title: postsArr[i].title,
-		// 		subtitle: postsArr[i].subtitle, 
-		// 		text: postsArr[i].text,
-		// 		url: postsArr[i].url,
-		// 	}}).
-		// 	exec (function(err, newPost){
-		// 		if(err){
-		// 			console.log(err);
-		// 		}
-		// 		if(newPost){
-		// 			console.log("Post Updated successfully");
-		// 		}
-		// 	})
-		// }
-
-
 	});
 };
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 exports.getAllPosts = function(req, res){
-	console.log("Start Get All Walla Post...");
+	console.log("Start Get All Post...");
 	Post.find().where('_id').exec (function(err, data){
 		if(err) {
 			console.log(err);
